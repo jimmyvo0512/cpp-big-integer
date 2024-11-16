@@ -11,6 +11,9 @@ private:
   bool sign;
 
   void trim();
+  BigInt shiftLeftTen(int p) const;
+
+  static BigInt fromReversedStr(string s);
 
 public:
   BigInt();

@@ -1,5 +1,6 @@
 #include "big_int.hpp"
 #include <algorithm>
+#include <string>
 
 BigInt::BigInt() : value(""), sign(true) {}
 
@@ -90,27 +91,46 @@ BigInt BigInt::operator-() const {
 }
 
 BigInt BigInt::operator*(const BigInt &number) const {
-  BigInt n = 0;
-  for (int i = 0; i < number.value.length(); ++i) {
-    BigInt current;
-    int c;
-    for (int j = 0, carry = 0; j < value.length() || carry; ++j) {
-      c = carry;
-      if (j < value.length())
-        c += int(number.value[i] - '0') * int(value[j] - '0');
-      if (c < 10) {
-        current.value += char(c + '0');
-        carry = 0;
-      } else {
-        current.value += char(c % 10 + '0');
-        carry = c / 10;
-      }
-    }
-    for (int j = 0; j < i; ++j)
-      current.value = '0' + current.value;
-    n += current;
+  if (*this == 0 || number == 0) {
+    return 0;
   }
-  n.sign = sign == number.sign;
+
+  auto sgn = sign == number.sign;
+
+  if (this->value.length() == 1 && number.value.length() == 1) {
+    auto res = (this->value[0] - '0') * (number.value[0] - '0');
+    return BigInt(sgn ? res : -res);
+  }
+
+  auto l = max(this->value.length(), number.value.length());
+  l = (l + 1) / 2;
+
+  auto mt = min(l, this->value.length()), mn = min(l, number.value.length());
+
+  auto sb = this->value.substr(0, mt),
+       sa = this->value.substr(mt, this->value.length() - mt),
+       sd = number.value.substr(0, mn),
+       sc = number.value.substr(mn, number.value.length() - mn);
+
+  auto b = fromReversedStr(sb), a = fromReversedStr(sa),
+       d = fromReversedStr(sd), c = fromReversedStr(sc);
+
+  auto ac = a * c, bd = b * d, abcd = (a + b) * (c + d);
+  abcd -= ac + bd;
+
+  auto res = ac.shiftLeftTen(l * 2) + abcd.shiftLeftTen(l) + bd;
+  res.sign = sgn;
+
+  return res;
+}
+
+BigInt BigInt::shiftLeftTen(int p) const {
+  return fromReversedStr(string(p, '0') + this->value);
+}
+
+BigInt BigInt::fromReversedStr(string s) {
+  BigInt n;
+  n.value = s;
   return n;
 }
 

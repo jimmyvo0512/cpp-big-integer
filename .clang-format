@@ -1,0 +1,5 @@
+BasedOnStyle: LLVM
+AlignConsecutiveAssignments: Consecutive
+UseTab: Always
+IndentWidth: 4
+TabWidth: 4
